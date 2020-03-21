@@ -37,7 +37,7 @@ import (
 )
 
 const (
-	HOST = "localhost"
+	HOST = "ec2-3-94-79-118.compute-1.amazonaws.com"
 	PORT = "42424"
 	HOME_PAGE = "/"
 	WS_ENDPOINT = "/ttt"
