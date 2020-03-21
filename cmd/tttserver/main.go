@@ -25,6 +25,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"github.com/gorilla/websocket"
@@ -98,13 +99,17 @@ func websocketPage(w http.ResponseWriter, r *http.Request) {
 		
 		log.Printf("Received from WebSocket: %s", message)
 
-		//jsonMessage := json.Unmarshal(message)
+		results := map[string][3][3]player.Player{}
+		err = json.Unmarshal(message, &results)
+		if err != nil {
+			log.Println("Error unmarshalling JSON: ", err)
+			break
+		}
+		var b = board.NewBoard(results["Cells"])
 
-		//b := NewBoard(jsonMessage)
+		var replyMessage = checkGame(b)
 
-		//var replyMessage = checkGame(b)
-
-		err = c.WriteMessage(messageType, message)
+		err = c.WriteMessage(messageType, []byte(replyMessage))
 		if err != nil {
 			log.Println("Error writing to WebSocket: ", err)
 			break
@@ -120,17 +125,18 @@ func routeHttpRequests() {
 func main() {
 	flag.Parse()
 	routeHttpRequests()
+	log.Println("Listening for client...")
 	log.Fatal(http.ListenAndServe(*addr, nil))
 }
 
-func checkGame(b board.Board) []byte {
+func checkGame(b board.Board) string {
 	if board.CheckForWinningPlayer(player.X, b) {
-		return []byte("X wins!")
+		return "X wins!"
 	} else if board.CheckForWinningPlayer(player.O, b) {
-		return []byte("O wins!")
+		return "O wins!"
 	} else if board.IsBoardFull(b) {
-		return []byte("No winner: cat's game.")
+		return "No winner: cat's game."
 	} else {
-		return []byte("Game not yet complete.")
+		return "Game not yet complete."
 	}
 }

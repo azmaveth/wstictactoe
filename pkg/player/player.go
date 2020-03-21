@@ -24,11 +24,6 @@
 
 package player
 
-import (
-	"encoding/json"
-	"strings"
-)
-
 type Player int
 
 const (
@@ -36,34 +31,3 @@ const (
 	X
 	O
 )
-
-func (p *Player) UnmarshalJSON(b []byte) error {
-	var s string
-	if err := json.Unmarshal(b, &s); err != nil {
-		return err
-	}
-	switch strings.ToLower(s) {
-	default:
-		*p = Blank
-	case "X":
-		*p = X
-	case "O":
-		*p = O
-	}
-
-	return nil
-}
-
-func (p Player) MarshalJSON() ([]byte, error) {
-	var s string
-	switch p {
-	default:
-		s = "Blank"
-	case X:
-		s = "X"
-	case O:
-		s = "O"
-	}
-
-	return json.Marshal(s)
-}

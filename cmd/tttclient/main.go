@@ -22,89 +22,50 @@
  * SOFTWARE.
  */
 
-package ws_tictactoe_client
+package main
 
 import (
 	"encoding/json"
 	"flag"
-	"log"
-	"net/url"
-	"os"
-	"os/signal"
-
 	"github.com/azmaveth/wstictactoe/pkg/board"
 	"github.com/azmaveth/wstictactoe/pkg/player"
 	"github.com/gorilla/websocket"
+	"log"
+	"net/url"
 )
 
-var addr = flag.String("addr", "localhost:42424", "http service address")
+const (
+	HOST = "localhost"
+	PORT = "42424"
+	WS_ENDPOINT = "/ttt"
+)
 
-func client() {
+var addr = flag.String("addr", HOST + ":" + PORT, "HTTP Server Address")
+
+func main() {
 	flag.Parse()
-	log.SetFlags(0)
 
-	interrupt := make(chan os.Signal, 1)
-	signal.Notify(interrupt, os.Interrupt)
-
-	u := url.URL{Scheme: "ws", Host: *addr, Path: "/ws"}
-	log.Printf("connecting to %s", u.String())
+	u := url.URL{Scheme: "ws", Host: *addr, Path: WS_ENDPOINT}
+	log.Printf("Attempting to connect to %s", u.String())
 
 	c, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
 	if err != nil {
-		log.Fatal("dial:", err)
+		log.Fatal("Error connecting to WebSocket: ", err)
 	}
 	defer c.Close()
 
-	done := make(chan struct{})
-
-	go func() {
-		defer close(done)
-		for {
-			_, message, err := c.ReadMessage()
-			if err != nil {
-				log.Println("read:", err)
-				return
-			}
-			log.Printf("recv: %s", message)
-		}
-	}()
-
 	var b = board.NewBoard([3][3]player.Player{
-		{player.Blank, player.Blank, player.Blank},
-		{player.Blank, player.Blank, player.Blank},
-		{player.Blank, player.Blank, player.Blank}})
+		{player.O, player.Blank, player.O},
+		{player.O, player.X, player.X},
+		{player.X, player.X, player.O}})
 
 	var bJson, _ = json.Marshal(b)
+
+	log.Println("Sending: " + string(bJson))
+
 	err = c.WriteMessage(websocket.TextMessage, bJson)
 
-	//ticker := time.NewTicker(time.Second)
-	//defer ticker.Stop()
-	//
-	//for {
-	//	select {
-	//	case <-done:
-	//		return
-	//	case t := <-ticker.C:
-	//		err := c.WriteMessage(websocket.TextMessage, []byte(t.String()))
-	//		if err != nil {
-	//			log.Println("write:", err)
-	//			return
-	//		}
-	//	case <-interrupt:
-	//		log.Println("interrupt")
-	//
-	//		// Cleanly close the connection by sending a close message and then
-	//		// waiting (with timeout) for the server to close the connection.
-	//		err := c.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
-	//		if err != nil {
-	//			log.Println("write close:", err)
-	//			return
-	//		}
-	//		select {
-	//		case <-done:
-	//		case <-time.After(time.Second):
-	//		}
-	//		return
-	//	}
-	//}
+	_, responseMessage, err := c.ReadMessage()
+
+	log.Println("Response: " + string(responseMessage))
 }

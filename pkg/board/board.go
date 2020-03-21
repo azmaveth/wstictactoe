@@ -24,7 +24,9 @@
 
 package board
 
-import "github.com/azmaveth/wstictactoe/pkg/player"
+import (
+	"github.com/azmaveth/wstictactoe/pkg/player"
+)
 
 type Board struct {
 	Cells [3][3]player.Player
@@ -35,10 +37,10 @@ func NewBoard(cells [3][3]player.Player) Board {
 }
 
 func IsBoardFull(b Board) bool {
-	var row = 0
-	var col = 0
 	var foundBlank = false
+	var row = 0
 	for !foundBlank && row < 3 {
+		var col = 0
 		for !foundBlank && col < 3 {
 			if b.Cells[row][col] == player.Blank {
 				foundBlank = true
