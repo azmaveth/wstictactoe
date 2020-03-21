@@ -54,16 +54,44 @@ func main() {
 	}
 	defer c.Close()
 
+	// No winner yet, board not full
 	var b = board.NewBoard([3][3]player.Player{
 		{player.O, player.Blank, player.O},
 		{player.O, player.X, player.X},
 		{player.X, player.X, player.O}})
+	sendBoard(b, c)
 
+	// No winner, board full
+	b = board.NewBoard([3][3]player.Player{
+		{player.O, player.X, player.O},
+		{player.O, player.X, player.X},
+		{player.X, player.O, player.O}})
+	sendBoard(b, c)
+
+	// X wins
+	b = board.NewBoard([3][3]player.Player{
+		{player.O, player.X, player.O},
+		{player.O, player.X, player.X},
+		{player.X, player.X, player.O}})
+	sendBoard(b, c)
+
+	// O wins
+	b = board.NewBoard([3][3]player.Player{
+		{player.O, player.O, player.O},
+		{player.O, player.X, player.X},
+		{player.X, player.X, player.O}})
+	sendBoard(b, c)
+}
+
+func sendBoard(b board.Board, c *websocket.Conn) {
 	var bJson, _ = json.Marshal(b)
 
 	log.Println("Sending: " + string(bJson))
 
-	err = c.WriteMessage(websocket.TextMessage, bJson)
+	err := c.WriteMessage(websocket.TextMessage, bJson)
+	if err != nil {
+		log.Fatal("Error sending message: ", err)
+	}
 
 	_, responseMessage, err := c.ReadMessage()
 
