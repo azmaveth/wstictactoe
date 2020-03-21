@@ -43,7 +43,7 @@ const (
 	WS_ENDPOINT = "/ttt"
 )
 
-var addr = flag.String("addr", "localhost:" + PORT, "HTTP Server Address")
+var addr = flag.String("addr", ":" + PORT, "HTTP Server Address")
 
 var upgrader = websocket.Upgrader{}
 
