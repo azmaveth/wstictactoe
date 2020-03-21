@@ -1,4 +1,4 @@
-module github.com/azmaveth/ws-tictactoe-server
+module github.com/azmaveth/wstictactoe
 
 go 1.14
 
